@@ -13,11 +13,11 @@ export const RegistrarDashboard: React.FC<Props> = ({ requests }) => {
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-[#002d62]">
-            Registrar Read-Only Audit View
+            Registrar Audit View
           </h2>
           <p className="text-sm text-slate-500">
-            Consolidated clearance statuses from participating departments
-            preserving record integrity[cite: 1].
+            Consolidated clearance statuses from departments
+            preserving record integrity.
           </p>
         </div>
         <button
