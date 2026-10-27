@@ -19,20 +19,20 @@ unified-clearance-information-system/
     │   └── index.ts            # TypeScript interfaces (Roles, StudentProfile, Requests, Statuses)
     │
     ├── services/
-    │   └── mockDataService.ts  # Singleton data service handling in-memory dummy records & updates
+    │   └── mockDataService.ts  # Data service handling in-memory dummy records & updates
     │
     ├── components/
-    │   ├── Navbar.tsx          # Top navigation bar, session indicators, and role sign-out
+    │   ├── NavBar.tsx          # Top navigation bar, session indicators, and role sign-out
     │   ├── StatusBadge.tsx     # Color-coded badges for clearance & request states
     │   ├── ProfileModal.tsx    # Modal for viewing student info and editing contact/notes
     │   ├── RequestModal.tsx    # Modal for selecting documents & filing requests
     │   └── ConfirmationModal.tsx # Acknowledgment popup after request submission
     │
     └── pages/
-        ├── LoginPage.tsx              # Dedicated login portal with 7-role selector
+        ├── LoginPage.tsx              # Dedicated login portal with role selector
         ├── StudentDashboard.tsx       # Student Portal: Request history and live clearance inspection
-        ├── DepartmentClearancePage.tsx# Department Console: Approvals and obligation holds
-        ├── RegistrarDashboardPage.tsx # Registrar Desk: Consolidated cross-department read-only audit
+        ├── DepartmentClearancePage.tsx # Department Console: Approvals and obligation holds
+        ├── RegistrarDashboard.tsx # Registrar Desk: Consolidated cross-department read-only audit
         └── SchedulingPage.tsx         # Scheduling Subsystem: Pick-up slots and rescheduling
 ```
 
@@ -48,7 +48,7 @@ Ensure **Node.js** (v18 or higher) and **npm** are installed on your machine.
 ### 2. Installation
 ```bash
 # Clone or navigate to the project directory
-cd unified-clearance-information-system
+e.g. "cd unified-clearance-information-system"
 
 # Install dependencies
 npm install
@@ -65,10 +65,10 @@ Open your browser and navigate to `http://localhost:5173`.
 ## 👥 Demo Role Testing Guide
 
 On the Login screen, choose any role from the dropdown:
-* **Student:** `lopez.368966@caloocan.sti.edu.ph`
-* **Registrar:** `REG-01`
-* **Library:** `LIB-02`
-* **Accounting:** `ACC-01`
-* **Guidance Office:** `GUID-01`
-* **MIS:** `MIS-01`
-* **Student Affairs:** `OSA-01`
+* **Student:** `e.g. lopez.368966@caloocan.sti.edu.ph`
+* **Registrar:** `e.g. REG-01`
+* **Library:** `e.g. LIB-02`
+* **Accounting:** `e.g. ACC-01`
+* **Guidance Office:** `e.g. GUID-01`
+* **MIS:** `e.g. MIS-01`
+* **Student Affairs:** `e.g. OSA-01`
