@@ -9,18 +9,73 @@ interface Props {
   requests: DocumentRequest[];
   onCreateRequest: (docType: DocumentRequest["documentType"]) => void;
   onCancelRequest: (id: string) => void;
+  onUpdateRequest: (id: string, docType: DocumentRequest["documentType"]) => void;
+  onDeleteRequest: (id: string) => void;
 }
 
 export const StudentDashboard: React.FC<Props> = ({
   requests,
   onCreateRequest,
   onCancelRequest,
+  onUpdateRequest,
+  onDeleteRequest,
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedReq, setSelectedReq] = useState<DocumentRequest | null>(
-    requests[0] || null,
+  const [editReq, setEditReq] = useState<DocumentRequest | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    requests[0]?.id ?? null,
   );
+  const selectedReq = requests.find((r) => r.id === selectedId) ?? null;
+
+  const renderActions = (req: DocumentRequest, mobile: boolean) => {
+    const size = mobile
+      ? "text-sm px-3 py-1.5 border rounded-lg font-semibold"
+      : "text-xs font-semibold";
+    return (
+      <>
+        {(req.status === "Pending" || req.status === "In Clearance") && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditReq(req);
+            }}
+            className={`${size} text-[#002d62] hover:text-blue-800 ${mobile ? "border-[#002d62]" : ""}`}
+          >
+            Edit
+          </button>
+        )}
+        {req.status !== "Cancelled" && req.status !== "Completed" && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancelRequest(req.id);
+            }}
+            className={`${size} text-amber-600 hover:text-amber-800 ${mobile ? "border-amber-500" : ""}`}
+          >
+            Cancel
+          </button>
+        )}
+        {req.status !== "Completed" && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(req);
+            }}
+            className={`${size} text-rose-600 hover:text-rose-800 ${mobile ? "border-rose-500" : ""}`}
+          >
+            Delete
+          </button>
+        )}
+      </>
+    );
+  };
+
+  const handleDelete = (req: DocumentRequest) => {
+    if (window.confirm(`Delete request ${req.id}? This cannot be undone.`)) {
+      onDeleteRequest(req.id);
+    }
+  };
 
   const handleSubmitted = (docType: DocumentRequest["documentType"]) => {
     onCreateRequest(docType);
@@ -51,7 +106,35 @@ export const StudentDashboard: React.FC<Props> = ({
               Dashboard of Request (Past Submissions)
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="md:hidden divide-y divide-slate-200">
+            {requests.map((req) => (
+              <div
+                key={req.id}
+                onClick={() => setSelectedId(req.id)}
+                className={`p-4 space-y-2 cursor-pointer ${
+                  selectedReq?.id === req.id ? "bg-blue-50/80" : ""
+                }`}
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="font-semibold text-sm text-[#002d62]">
+                    {req.id}
+                  </span>
+                  <StatusBadge status={req.status} />
+                </div>
+                <div className="text-sm font-medium text-slate-800">
+                  {req.documentType}
+                </div>
+                <div className="text-xs text-slate-500">{req.submittedAt}</div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {renderActions(req, true)}
+                </div>
+              </div>
+            ))}
+            {requests.length === 0 && (
+              <p className="p-4 text-xs text-slate-400">No requests yet.</p>
+            )}
+          </div>
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-100 text-slate-600 text-xs uppercase">
                 <tr>
@@ -66,7 +149,7 @@ export const StudentDashboard: React.FC<Props> = ({
                 {requests.map((req) => (
                   <tr
                     key={req.id}
-                    onClick={() => setSelectedReq(req)}
+                    onClick={() => setSelectedId(req.id)}
                     className={`cursor-pointer transition hover:bg-blue-50/50 ${
                       selectedReq?.id === req.id
                         ? "bg-blue-50/80 font-medium"
@@ -83,19 +166,8 @@ export const StudentDashboard: React.FC<Props> = ({
                     <td className="py-3 px-4">
                       <StatusBadge status={req.status} />
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      {req.status !== "Cancelled" &&
-                        req.status !== "Completed" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onCancelRequest(req.id);
-                            }}
-                            className="text-xs text-rose-600 hover:text-rose-800 font-semibold"
-                          >
-                            Cancel
-                          </button>
-                        )}
+                    <td className="py-3 px-4 text-right space-x-3 whitespace-nowrap">
+                      {renderActions(req, false)}
                     </td>
                   </tr>
                 ))}
@@ -156,6 +228,18 @@ export const StudentDashboard: React.FC<Props> = ({
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmitted}
       />
+
+      {editReq && (
+        <RequestModal
+          key={editReq.id}
+          isOpen
+          onClose={() => setEditReq(null)}
+          onSubmit={(docType) => onUpdateRequest(editReq.id, docType)}
+          initialDocType={editReq.documentType}
+          title="Edit Document Request"
+          submitLabel="Save Changes"
+        />
+      )}
 
       <ConfirmationModal
         isOpen={confirmOpen}

@@ -8,16 +8,19 @@ import { StudentDashboard } from './pages/StudentDashboard';
 import { DepartmentClearancePage } from './pages/DepartmentClearancePage';
 import { RegistrarDashboard } from './pages/RegistrarDashboard';
 import { SchedulingPage } from './pages/SchedulingPage';
+import { StudentRecordsPage } from './pages/StudentRecordsPage';
 
 export const App: React.FC = () => {
   const [session, setSession] = useState<UserSession | null>(mockDataService.getSession());
   const [activeTab, setActiveTab] = useState<string>('student-requests');
   const [profile, setProfile] = useState<StudentProfile>(mockDataService.getProfile());
+  const [profiles, setProfiles] = useState<StudentProfile[]>(mockDataService.getProfiles());
   const [requests, setRequests] = useState<DocumentRequest[]>(mockDataService.getRequests());
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
   const handleLogin = (role: UserRole, identifier: string) => {
     const userSession = mockDataService.login(role, identifier);
+    setProfile(mockDataService.getProfile());
     setSession(userSession);
     if (role === 'Student') setActiveTab('student-requests');
     else if (role === 'Registrar') setActiveTab('registrar-audit');
@@ -31,6 +34,16 @@ export const App: React.FC = () => {
 
   const handleCreateRequest = (docType: DocumentRequest['documentType']) => {
     mockDataService.createRequest(docType);
+    setRequests(mockDataService.getRequests());
+  };
+
+  const handleUpdateRequest = (id: string, docType: DocumentRequest['documentType']) => {
+    mockDataService.updateRequest(id, docType);
+    setRequests(mockDataService.getRequests());
+  };
+
+  const handleDeleteRequest = (id: string) => {
+    mockDataService.deleteRequest(id);
     setRequests(mockDataService.getRequests());
   };
 
@@ -63,6 +76,31 @@ export const App: React.FC = () => {
   const handleSaveProfile = (updated: StudentProfile) => {
     mockDataService.updateProfile(updated);
     setProfile(mockDataService.getProfile());
+    setProfiles(mockDataService.getProfiles());
+  };
+
+  const refreshStudentData = () => {
+    setProfile(mockDataService.getProfile());
+    setProfiles(mockDataService.getProfiles());
+    setRequests(mockDataService.getRequests());
+  };
+
+  const handleCreateStudent = (newProfile: StudentProfile) => {
+    const error = mockDataService.createProfile(newProfile);
+    if (!error) refreshStudentData();
+    return error;
+  };
+
+  const handleUpdateStudent = (originalStudentId: string, updated: StudentProfile) => {
+    const error = mockDataService.updateProfileRecord(originalStudentId, updated);
+    if (!error) refreshStudentData();
+    return error;
+  };
+
+  const handleDeleteStudent = (studentId: string) => {
+    const error = mockDataService.deleteProfile(studentId);
+    if (!error) refreshStudentData();
+    return error;
   };
 
   if (!session) {
@@ -82,14 +120,25 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {session.role === 'Student' && activeTab === 'student-requests' && (
           <StudentDashboard
-            requests={requests}
+            requests={requests.filter((r) => r.studentId === profile.studentId)}
             onCreateRequest={handleCreateRequest}
             onCancelRequest={handleCancelRequest}
+            onUpdateRequest={handleUpdateRequest}
+            onDeleteRequest={handleDeleteRequest}
           />
         )}
 
         {session.role === 'Registrar' && activeTab === 'registrar-audit' && (
           <RegistrarDashboard requests={requests} />
+        )}
+
+        {session.role === 'Registrar' && activeTab === 'student-records' && (
+          <StudentRecordsPage
+            profiles={profiles}
+            onCreate={handleCreateStudent}
+            onUpdate={handleUpdateStudent}
+            onDelete={handleDeleteStudent}
+          />
         )}
 
         {session.role !== 'Student' && session.role !== 'Registrar' && activeTab === 'department-clearance' && (
@@ -115,6 +164,7 @@ export const App: React.FC = () => {
       </footer>
 
       <ProfileModal
+        key={JSON.stringify(profile)}
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
         profile={profile}

@@ -48,7 +48,7 @@ export const ProfileModal: React.FC<Props> = ({
           className="p-6 space-y-4 max-h-[85vh] overflow-y-auto"
         >
           {/* Read-Only: Name */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase">
                 First Name
@@ -74,7 +74,7 @@ export const ProfileModal: React.FC<Props> = ({
           </div>
 
           {/* Read-Only: Student ID & Year Level */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase">
                 Student ID

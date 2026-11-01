@@ -53,7 +53,7 @@ export const LoginPage: React.FC<Props> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#002d62] via-[#001f44] to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl border-t-8 border-[#fec810] w-full max-w-md p-8 space-y-6">
+      <div className="bg-white rounded-2xl shadow-2xl border-t-8 border-[#fec810] w-full max-w-md p-6 sm:p-8 space-y-6">
         {/* Header Branding */}
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-[#002d62] tracking-tight">

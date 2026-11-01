@@ -32,7 +32,7 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h2 className="text-xl font-bold text-[#002d62]">{currentDept} Clearance Review</h2>
           <p className="text-sm text-slate-500">
@@ -49,6 +49,26 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
           <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold text-sm text-slate-800">
             Incoming Clearance Queue for {currentDept}
           </div>
+          <div className="md:hidden divide-y divide-slate-200">
+            {requests.map(req => {
+              const item = req.clearanceItems.find(c => c.department === currentDept);
+              return (
+                <div
+                  key={req.id}
+                  onClick={() => setSelectedReqId(req.id)}
+                  className={`p-4 space-y-2 cursor-pointer ${selectedReqId === req.id ? 'bg-blue-50/80' : ''}`}
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="font-semibold text-sm text-[#002d62]">{req.id}</span>
+                    <StatusBadge status={item?.status || 'Pending'} />
+                  </div>
+                  <div className="text-sm font-medium text-slate-800">{req.studentName}</div>
+                  <div className="text-xs text-slate-500">{req.documentType}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-100 text-slate-600 text-xs uppercase">
               <tr>
@@ -86,6 +106,7 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
               })}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Action Panel */}

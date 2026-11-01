@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { DocumentRequest, UserSession } from "../types";
 import { StatusBadge } from "../components/StatusBadge";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface Props {
   session: UserSession;
@@ -21,6 +22,7 @@ export const SchedulingPage: React.FC<Props> = ({
   const [selectedId, setSelectedId] = useState(eligibleRequests[0]?.id || "");
   const [newDate, setNewDate] = useState("");
   const [newSlot, setNewSlot] = useState("09:00 AM - 10:00 AM");
+  const [rescheduleMessage, setRescheduleMessage] = useState<string | null>(null);
 
   const selectedReq = requests.find((r) => r.id === selectedId);
 
@@ -28,7 +30,14 @@ export const SchedulingPage: React.FC<Props> = ({
     e.preventDefault();
     if (!selectedId || !newDate) return;
     onReschedule(selectedId, newDate, newSlot);
-    alert(`Appointment rescheduled for ${selectedId}`);
+    const readableDate = new Date(`${newDate}T00:00:00`).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    setRescheduleMessage(
+      `Request: ${selectedId}\nNew pick-up date: ${readableDate}\nNew time slot: ${newSlot}`,
+    );
   };
 
   return (
@@ -44,6 +53,47 @@ export const SchedulingPage: React.FC<Props> = ({
           <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold text-sm text-slate-800">
             Document Collection Schedule
           </div>
+          <div className="md:hidden divide-y divide-slate-200">
+            {eligibleRequests.map((req) => (
+              <div
+                key={req.id}
+                onClick={() => setSelectedId(req.id)}
+                className={`p-4 space-y-2 cursor-pointer ${selectedId === req.id ? "bg-blue-50" : ""}`}
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="font-semibold text-sm text-[#002d62]">
+                    {req.id}
+                  </span>
+                  <StatusBadge status={req.status} />
+                </div>
+                <div className="text-sm font-medium text-slate-800">
+                  {req.studentName}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {req.pickupDate || "Unscheduled"} &bull;{" "}
+                  {req.pickupTimeSlot || "N/A"}
+                </div>
+                {session.role === "Registrar" &&
+                  req.status === "Ready for Pickup" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCloseCollection(req.id);
+                      }}
+                      className="text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm"
+                    >
+                      Mark Released
+                    </button>
+                  )}
+              </div>
+            ))}
+            {eligibleRequests.length === 0 && (
+              <p className="p-4 text-xs text-slate-400">
+                No requests are ready for pick-up yet.
+              </p>
+            )}
+          </div>
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-100 text-slate-600 text-xs uppercase">
               <tr>
@@ -93,6 +143,7 @@ export const SchedulingPage: React.FC<Props> = ({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Reschedule Box */}
@@ -151,6 +202,13 @@ export const SchedulingPage: React.FC<Props> = ({
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={rescheduleMessage !== null}
+        onClose={() => setRescheduleMessage(null)}
+        title="Pick-up Rescheduled"
+        message={rescheduleMessage ?? ""}
+      />
     </div>
   );
 };

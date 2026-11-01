@@ -31,7 +31,7 @@ export const RegistrarDashboard: React.FC<Props> = ({ requests }) => {
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[56rem] text-left text-xs">
             <thead className="bg-[#002d62] text-white uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">Request Ref</th>

@@ -5,10 +5,20 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (docType: DocumentRequest['documentType']) => void;
+  initialDocType?: DocumentRequest['documentType'];
+  title?: string;
+  submitLabel?: string;
 }
 
-export const RequestModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
-  const [docType, setDocType] = useState<DocumentRequest['documentType']>('Transcript of Records (TOR)');
+export const RequestModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialDocType = 'Transcript of Records (TOR)',
+  title = 'Select Document to Request',
+  submitLabel = 'Request'
+}) => {
+  const [docType, setDocType] = useState<DocumentRequest['documentType']>(initialDocType);
 
   if (!isOpen) return null;
 
@@ -22,7 +32,7 @@ export const RequestModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => 
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
         <div className="bg-[#002d62] text-white px-6 py-4 flex justify-between items-center border-b-2 border-[#fec810]">
-          <h3 className="font-bold text-lg">Select Document to Request</h3>
+          <h3 className="font-bold text-lg">{title}</h3>
           <button onClick={onClose} className="text-yellow-400 hover:text-white text-xl">✕</button>
         </div>
 
@@ -60,7 +70,7 @@ export const RequestModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => 
               type="submit"
               className="px-5 py-2 bg-[#002d62] text-[#fec810] font-bold rounded-lg text-sm hover:bg-[#001f44] transition shadow"
             >
-              Request
+              {submitLabel}
             </button>
           </div>
         </form>

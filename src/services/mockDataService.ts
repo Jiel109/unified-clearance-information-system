@@ -49,18 +49,54 @@ export const initialRequests: DocumentRequest[] = [
   }
 ];
 
+const REQUESTS_KEY = 'ucis.requests';
+const PROFILES_KEY = 'ucis.profiles';
+
+const loadStored = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const saveStored = (key: string, value: unknown): void => {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    return;
+  }
+};
+
+const stamp = () => new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+
 class MockDataService {
-  private requests: DocumentRequest[] = [...initialRequests];
-  private profile: StudentProfile = { ...initialStudentProfile };
+  private requests: DocumentRequest[] = loadStored<DocumentRequest[]>(REQUESTS_KEY, [...initialRequests]);
+  private profiles: StudentProfile[] = loadStored<StudentProfile[]>(PROFILES_KEY, [{ ...initialStudentProfile }]);
+  private currentStudentId: string = this.profiles[0]?.studentId ?? initialStudentProfile.studentId;
   private session: UserSession | null = null;
+
+  private persist(): void {
+    saveStored(REQUESTS_KEY, this.requests);
+    saveStored(PROFILES_KEY, this.profiles);
+  }
 
   getSession(): UserSession | null {
     return this.session;
   }
 
   login(role: UserRole, identifier: string): UserSession {
+    if (role === 'Student') {
+      const match = this.profiles.find(
+        p => p.email.toLowerCase() === identifier.trim().toLowerCase() || p.studentId === identifier.trim()
+      );
+      this.currentStudentId = (match ?? this.profiles[0]).studentId;
+    }
+
+    const profile = this.getProfile();
     let name = 'Authorized User';
-    if (role === 'Student') name = `${this.profile.firstName} ${this.profile.lastName}`;
+    if (role === 'Student') name = `${profile.firstName} ${profile.lastName}`;
     if (role === 'Registrar') name = 'Mr. Juan Dela Cruz (Registrar Staff)';
     if (role === 'Library') name = 'Mr. John Doe (Librarian)';
     if (role === 'Accounting') name = 'Ms. Jane Doe (Accounting Staff)';
@@ -77,11 +113,57 @@ class MockDataService {
   }
 
   getProfile(): StudentProfile {
-    return { ...this.profile };
+    const current = this.profiles.find(p => p.studentId === this.currentStudentId) ?? this.profiles[0];
+    return { ...current };
   }
 
   updateProfile(updated: StudentProfile): void {
-    this.profile = { ...updated };
+    this.profiles = this.profiles.map(p => (p.studentId === updated.studentId ? { ...updated } : p));
+    this.persist();
+  }
+
+  getProfiles(): StudentProfile[] {
+    return this.profiles.map(p => ({ ...p }));
+  }
+
+  createProfile(newProfile: StudentProfile): string | null {
+    const duplicate = this.profiles.some(
+      p =>
+        p.studentId === newProfile.studentId ||
+        p.email.toLowerCase() === newProfile.email.toLowerCase()
+    );
+    if (duplicate) return 'A student with this Student ID or email already exists.';
+    this.profiles = [{ ...newProfile }, ...this.profiles];
+    this.persist();
+    return null;
+  }
+
+  updateProfileRecord(originalStudentId: string, updated: StudentProfile): string | null {
+    const duplicate = this.profiles.some(
+      p =>
+        p.studentId !== originalStudentId &&
+        (p.studentId === updated.studentId || p.email.toLowerCase() === updated.email.toLowerCase())
+    );
+    if (duplicate) return 'Another student already uses this Student ID or email.';
+    this.profiles = this.profiles.map(p => (p.studentId === originalStudentId ? { ...updated } : p));
+    const fullName = `${updated.firstName} ${updated.lastName}`;
+    this.requests = this.requests.map(req =>
+      req.studentId === originalStudentId
+        ? { ...req, studentId: updated.studentId, studentName: fullName }
+        : req
+    );
+    if (this.currentStudentId === originalStudentId) this.currentStudentId = updated.studentId;
+    this.persist();
+    return null;
+  }
+
+  deleteProfile(studentId: string): string | null {
+    if (this.profiles.length <= 1) return 'At least one student record must remain.';
+    this.profiles = this.profiles.filter(p => p.studentId !== studentId);
+    this.requests = this.requests.filter(req => req.studentId !== studentId);
+    if (this.currentStudentId === studentId) this.currentStudentId = this.profiles[0].studentId;
+    this.persist();
+    return null;
   }
 
   getRequests(): DocumentRequest[] {
@@ -89,23 +171,40 @@ class MockDataService {
   }
 
   createRequest(docType: DocumentRequest['documentType']): DocumentRequest {
+    const profile = this.getProfile();
     const newReq: DocumentRequest = {
       id: `REQ-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
-      studentId: this.profile.studentId,
-      studentName: `${this.profile.firstName} ${this.profile.lastName}`,
+      studentId: profile.studentId,
+      studentName: `${profile.firstName} ${profile.lastName}`,
       documentType: docType,
-      submittedAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      submittedAt: stamp(),
       status: 'In Clearance',
       clearanceItems: initialChecklist()
     };
     this.requests.unshift(newReq);
+    this.persist();
     return newReq;
+  }
+
+  updateRequest(requestId: string, docType: DocumentRequest['documentType']): void {
+    this.requests = this.requests.map(req =>
+      req.id === requestId && (req.status === 'Pending' || req.status === 'In Clearance')
+        ? { ...req, documentType: docType }
+        : req
+    );
+    this.persist();
+  }
+
+  deleteRequest(requestId: string): void {
+    this.requests = this.requests.filter(req => req.id !== requestId);
+    this.persist();
   }
 
   cancelRequest(requestId: string): void {
     this.requests = this.requests.map(req =>
       req.id === requestId ? { ...req, status: 'Cancelled' as const } : req
     );
+    this.persist();
   }
 
   updateDepartmentStatus(
@@ -124,7 +223,7 @@ class MockDataService {
           status,
           remarks,
           approverId,
-          timestamp: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+          timestamp: stamp()
         };
       });
 
@@ -141,18 +240,21 @@ class MockDataService {
         status: newStatus
       };
     });
+    this.persist();
   }
 
   reschedulePickup(requestId: string, date: string, timeSlot: string): void {
     this.requests = this.requests.map(req =>
       req.id === requestId ? { ...req, pickupDate: date, pickupTimeSlot: timeSlot } : req
     );
+    this.persist();
   }
 
   closeCollection(requestId: string): void {
     this.requests = this.requests.map(req =>
       req.id === requestId ? { ...req, status: 'Completed' as const } : req
     );
+    this.persist();
   }
 }
 

@@ -4,12 +4,14 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   message?: string;
+  title?: string;
 }
 
 export const ConfirmationModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  message = 'Request submitted — waiting for department response.'
+  message = 'Request submitted — waiting for department response.',
+  title = 'Request Registered'
 }) => {
   if (!isOpen) return null;
 
@@ -19,8 +21,8 @@ export const ConfirmationModal: React.FC<Props> = ({
         <div className="w-16 h-16 rounded-full bg-blue-50 border-4 border-[#fec810] text-[#002d62] flex items-center justify-center mx-auto text-2xl font-bold">
           ✓
         </div>
-        <h4 className="font-bold text-slate-800 text-base">Request Registered</h4>
-        <p className="text-xs text-slate-600 leading-relaxed">{message}</p>
+        <h4 className="font-bold text-slate-800 text-base">{title}</h4>
+        <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{message}</p>
         <button
           onClick={onClose}
           className="w-full py-2 bg-[#002d62] hover:bg-[#001f44] text-[#fec810] font-bold rounded-lg text-sm transition"
