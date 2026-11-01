@@ -95,7 +95,7 @@ export const NavBar: React.FC<Props> = ({
                     : 'border-transparent text-slate-300 hover:text-white'
                 }`}
               >
-                Clearance Matrix (Read-Only)
+                Clearance Matrix
               </button>
               <button
                 onClick={() => setActiveTab('scheduling')}

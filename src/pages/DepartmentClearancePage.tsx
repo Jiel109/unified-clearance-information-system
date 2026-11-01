@@ -36,7 +36,7 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
         <div>
           <h2 className="text-xl font-bold text-[#002d62]">{currentDept} Clearance Review</h2>
           <p className="text-sm text-slate-500">
-            Sign off or place holds on student clearances on behalf of the {currentDept} office[cite: 1].
+            Clear or hold student clearances on behalf of the {currentDept} office.
           </p>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 text-[#002d62] px-3 py-1.5 rounded-lg text-xs font-bold">
