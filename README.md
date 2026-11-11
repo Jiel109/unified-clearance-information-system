@@ -33,7 +33,8 @@ unified-clearance-information-system/
         ├── StudentDashboard.tsx       # Student Portal: Request history and live clearance inspection
         ├── DepartmentClearancePage.tsx # Department Console: Approvals and obligation holds
         ├── RegistrarDashboard.tsx # Registrar Desk: Consolidated cross-department read-only audit
-        └── SchedulingPage.tsx         # Scheduling Subsystem: Pick-up slots and rescheduling
+        ├── SchedulingPage.tsx         # Scheduling Subsystem: Pick-up slots and rescheduling
+        └── StudentRecordsPage.tsx     # Student Records: View enrolled students
 ```
 
 ---
