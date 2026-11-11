@@ -26,7 +26,7 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReqId) return;
-    onUpdateStatus(selectedReqId, currentDept, status, remarks, session.identifier);
+    onUpdateStatus(selectedReqId, currentDept, status, remarks, session.username);
     setRemarks('');
   };
 
@@ -40,7 +40,7 @@ export const DepartmentClearancePage: React.FC<Props> = ({ session, requests, on
           </p>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 text-[#002d62] px-3 py-1.5 rounded-lg text-xs font-bold">
-          Logged Approver: {session.identifier}
+          Logged Approver: {session.username}
         </div>
       </div>
 
